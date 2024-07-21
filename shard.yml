@@ -1,0 +1,17 @@
+name: http_client
+version: 0.1.0
+
+authors:
+  - Jamie Gaskins <jgaskins@hey.com>
+
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+
+development_dependencies:
+  http_client:
+    path: .
+
+crystal: '>= 1.13.0'
+
+license: MIT
