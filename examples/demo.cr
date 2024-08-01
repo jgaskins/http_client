@@ -50,6 +50,7 @@ class WaitGroup
     ::spawn do
       Log.for(id).trace { "starting" }
       block.call
+    ensure
       done
       Log.for(id).trace { "done" }
     end
