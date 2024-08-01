@@ -52,6 +52,7 @@ module HTTPClient
     {% end %}
 
     def exec(request : HTTP::Request)
+      @before_request.try &.each &.call(request)
       @pool.checkout &.exec request
     end
   end
