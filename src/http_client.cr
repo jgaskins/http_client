@@ -23,20 +23,29 @@ module HTTPClient
     end
 
     def self.new(uri : URI)
-      new { HTTP::Client.new uri }
+      options = DB::Pool::Options.from_http_params(uri.query_params)
+      new(options) { HTTP::Client.new uri }
     end
 
-    def initialize(
+    def self.new(
       *,
       max_idle_pool_size = 6,
       max_pool_size = 0,
+      checkout_timeout : Time::Span = 5.seconds,
       &block : -> HTTP::Client
     )
       options = DB::Pool::Options.new(
         max_idle_pool_size: max_idle_pool_size,
         max_pool_size: max_pool_size,
+        # I don't like that DB::Pool::Options takes durations as scalars.
+        checkout_timeout: checkout_timeout.total_seconds,
       )
 
+      new options, &block
+    end
+
+    # :nodoc:
+    def initialize(options : DB::Pool::Options, &block : -> HTTP::Client)
       @pool = DB::Pool(HTTP::Client).new(options, &block)
     end
 
@@ -54,6 +63,8 @@ module HTTPClient
     def exec(request : HTTP::Request)
       @before_request.try &.each &.call(request)
       @pool.checkout &.exec request
+    rescue ex : DB::Error
+      raise Error.new(ex.message, cause: ex)
     end
   end
 
