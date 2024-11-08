@@ -62,7 +62,12 @@ module HTTPClient
 
     def exec(request : HTTP::Request)
       @before_request.try &.each &.call(request)
-      @pool.checkout &.exec request
+      @pool.checkout do |http|
+        http.exec request
+      rescue ex : DB::Error
+        http.close # Closing a DB::Pool resource will keep it from being checked back in
+        raise ex
+      end
     rescue ex : DB::Error
       raise Error.new(ex.message, cause: ex)
     end
