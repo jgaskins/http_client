@@ -91,21 +91,3 @@ record HaveBody, body : String do
     "Expected #{body.inspect} in HTTP response body: #{response.body}"
   end
 end
-
-# Remove this patch for Crystal 1.14.
-class WaitGroup
-  def self.wait
-    instance = new
-    yield instance
-    instance.wait
-  end
-
-  def spawn(&block)
-    add
-    ::spawn do
-      block.call
-    ensure
-      done
-    end
-  end
-end
