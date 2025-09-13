@@ -72,10 +72,6 @@ module HTTPClient
       raise Error.new(ex.message, cause: ex)
     end
 
-    def exec(request : HTTP::Request, & : HTTP::Client::Response ->)
-      {% raise "Cannot use `HTTPClient::Client#exec(request, &block)`. It results in infinite `yield` expansion. Use `HTTPClient::Client#checkout` to explicitly get an HTTP connection and run the block on that object." %}
-    end
-
     def checkout
       @pool.checkout { |http| yield http }
     end
